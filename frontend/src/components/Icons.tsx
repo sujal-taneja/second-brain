@@ -5,7 +5,6 @@ import {
   File,
   Headphones,
   Image,
-  LogOut,
 } from 'react-feather';
 
 interface IconType {
@@ -20,5 +19,4 @@ export const Icons = {
   article: (props: IconType) => <File {...props} />,
   audio: (props: IconType) => <Headphones {...props} />,
   link: (props: IconType) => <Link2 {...props} />,
-  logout: (props: IconType) => <LogOut {...props} />,
 };
