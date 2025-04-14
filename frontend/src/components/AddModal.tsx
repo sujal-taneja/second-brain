@@ -56,8 +56,6 @@ const AddModal = ({ open, onOpenChange, changeContentState }: DialogProps) => {
       }
     }
 
-    console.log(inputData);
-
     const response = await axios.post(
       `${BACKEND_URL}/api/v1/content`,
       inputData,

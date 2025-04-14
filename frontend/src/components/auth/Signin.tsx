@@ -16,7 +16,7 @@ function Input(props: InputType) {
   return (
     <input
       type={props.type}
-      className="w-full h-10 bg-input-div rounded-md px-4 focus:outline-0 relative"
+      className="w-full h-10 bg-input-div rounded-md px-4 focus:outline-0 relative text-normal-color"
       placeholder={props.placeholder}
       ref={props.inputRef}
     />
@@ -37,27 +37,27 @@ export default function Signin() {
   }
 
   async function signinButtonHandler() {
-    try {
-      const response = await axios.post<SigninResponse>(
-        `${BACKEND_URL}/api/v1/signin`,
-        {
-          username: usernameRef.current?.value,
-          password: passwordRef.current?.value,
-        }
-      );
+    // try {
+    const response = await axios.post<SigninResponse>(
+      `${BACKEND_URL}/api/v1/signin`,
+      {
+        username: usernameRef.current?.value,
+        password: passwordRef.current?.value,
+      }
+    );
 
-      errorMessageDiv.current!.innerText = `${response.data.message}!`;
+    errorMessageDiv.current!.innerText = `${response.data.message}!`;
 
-      const authHeader = response.headers['authorization'];
+    const authHeader = response.headers['authorization'];
 
-      localStorage.setItem('authorization', authHeader.replace('Bearer ', ''));
+    localStorage.setItem('authorization', authHeader.replace('Bearer ', ''));
 
-      setRedirect(true);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      errorMessageDiv.current!.innerText = `${error.response.data.error}!`;
-      localStorage.removeItem('authorization');
-    }
+    setRedirect(true);
+
+    // } catch (error: any) {
+    //   errorMessageDiv.current!.innerText = `${error.response.data.error}!`;
+    //   localStorage.removeItem('authorization');
+    // }
   }
 
   if (redirect) {
@@ -67,16 +67,20 @@ export default function Signin() {
   return (
     <main className="h-full w-full flex items-center justify-center bg-sign-bg">
       <section className="bg-body-bg w-100 flex flex-col items-center justify-center rounded-xl shadow-xl p-8 gap-4">
-        <h1 className="text-3xl font-bold">
+        <h1 className="text-3xl font-bold text-normal-color">
           Welcome to
           <span className="text-heading"> Brainly</span>
         </h1>
         <h3 className="text-subheading font-semibold -mt-3 text-md">
           Sign in to access your second brain!
         </h3>
-        <div className="self-start text-md -mb-2 text-sm">Username</div>
+        <div className="self-start text-md -mb-2 text-sm text-normal-color">
+          Username
+        </div>
         <Input type="text" placeholder="Suzie" inputRef={usernameRef} />
-        <div className="self-start text-md -mb-2 text-sm">Password</div>
+        <div className="self-start text-md -mb-2 text-sm  text-normal-color">
+          Password
+        </div>
         <div className="w-full relative flex items-center mb-2">
           <Input
             type={showPassword ? 'text' : 'password'}

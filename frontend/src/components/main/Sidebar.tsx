@@ -1,5 +1,4 @@
 import { Icons } from '../Icons';
-import brain from '../../icons/brainly.png';
 import { Button } from '../Button';
 import { useNavigate } from 'react-router-dom';
 
@@ -9,13 +8,10 @@ export default function Sidebar() {
   const navigate = useNavigate();
 
   return (
-    <aside className="flex h-full sticky top-0 min-h-screen">
+    <aside className="sm:flex h-full sticky top-0 min-h-screen bg-sign-bg hidden ">
       <div className="flex flex-col m-6 mr-12 h-full">
         <div className="flex items-center gap-3 mb-8">
-          <div className="w-8">
-            <img src={brain} alt="Icon of second brain app" />
-          </div>
-          <h1 className="font-bold text-2xl">Second Brain</h1>
+          <h1 className="font-bold text-2xl text-normal-color">Second Brain</h1>
         </div>
         <div className="text-gray-mid flex flex-col gap-3 ml-4">
           {Object.entries(Icons).map(([key, Icon]) => (
@@ -40,7 +36,7 @@ export default function Sidebar() {
           />
         </div>
       </div>
-      <hr className="border-0 outline-gray-200 outline-1 h-full" />
+      {/* <hr className="border-0 outline-gray-200 outline-1 h-full" /> */}
     </aside>
   );
 }

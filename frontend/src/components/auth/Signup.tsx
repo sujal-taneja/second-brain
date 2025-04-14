@@ -17,7 +17,7 @@ function Input({
   return (
     <input
       type={type}
-      className="w-full h-10 bg-input-div rounded-md px-4 focus:outline-0 relative"
+      className="w-full h-10 bg-input-div rounded-md px-4 focus:outline-0 relative text-normal-color"
       placeholder={placeholder}
       ref={inputRef}
     />
@@ -56,16 +56,20 @@ export default function Signup() {
   return (
     <main className="h-full w-full flex items-center justify-center bg-sign-bg">
       <section className="bg-body-bg w-100 flex flex-col items-center justify-center rounded-xl shadow-xl p-8 gap-4">
-        <h1 className="text-3xl font-bold">
+        <h1 className="text-3xl font-bold text-normal-color">
           Welcome to
           <span className="text-heading"> Brainly</span>
         </h1>
         <h3 className="text-subheading font-semibold -mt-3 text-md">
           Sign up to access your second brain!
         </h3>
-        <div className="self-start text-md -mb-2 text-sm">Username</div>
+        <div className="self-start text-md -mb-2 text-sm text-normal-color">
+          Username
+        </div>
         <Input type="text" placeholder="Suzie" inputRef={usernameRef} />
-        <div className="self-start text-md -mb-2 text-sm">Password</div>
+        <div className="self-start text-md -mb-2 text-sm text-normal-color">
+          Password
+        </div>
         <div className="w-full relative flex items-center mb-2">
           <Input
             type={showPassword ? 'text' : 'password'}

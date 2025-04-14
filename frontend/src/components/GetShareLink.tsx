@@ -15,8 +15,6 @@ function useContent(shareLink) {
       .then((response: any) => setContent(response.data));
   }, [shareLink]);
 
-  console.log('Content: ', content);
-
   return content;
 }
 

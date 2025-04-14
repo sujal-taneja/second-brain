@@ -12,9 +12,17 @@ connectDatabase();
 const app = express();
 app.use(express.json());
 
+// app.use(
+//   cors({
+//     origin: 'https://second-brain-suzie.vercel.app',
+//     credentials: true,
+//     allowedHeaders: ['Content-Type', 'Authorization'],
+//     exposedHeaders: ['Authorization'],
+//   })
+// );
+
 app.use(
   cors({
-    origin: 'https://second-brain-suzie.vercel.app',
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization'],
     exposedHeaders: ['Authorization'],
