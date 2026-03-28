@@ -5,6 +5,10 @@ const LinkSchema = new Schema({
   userId: { type: Types.ObjectId, ref: 'users', required: true },
 });
 
+LinkSchema.index({ hash: 1 }, { unique: true });
+
+LinkSchema.index({ userId: 1 });
+
 const LinkModel = mongoose.model('links', LinkSchema);
 
 export default LinkModel;
