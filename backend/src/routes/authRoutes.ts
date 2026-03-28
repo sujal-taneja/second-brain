@@ -3,10 +3,11 @@ import {
   signinController,
   signupController,
 } from '../controllers/authController';
+import { authLimiter } from '../middlewares/rateLimiter';
 
 const authRouter = Router();
 
-authRouter.post('/signup', signupController);
-authRouter.post('/signin', signinController);
+authRouter.post('/signup', authLimiter, signupController);
+authRouter.post('/signin', authLimiter, signinController);
 
 export default authRouter;
