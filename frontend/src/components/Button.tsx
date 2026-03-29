@@ -42,14 +42,21 @@ export interface ButtonProps {
   endIcon?: (size: number) => ReactElement;
   onClick: () => void;
   className?: string;
+  loading?: boolean;
+  disabled?: boolean;
 }
 
 export function Button(props: ButtonProps) {
+  const isDisabled = props.loading || props.disabled;
+
   return (
     <button
+      disabled={isDisabled}
       className={`flex items-center justify-center ${
         variantStyles[props.variant]
-      } ${sizeStyles[props.size]} ${props.className}`}
+      } ${sizeStyles[props.size]} ${props.className} ${
+        isDisabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'
+      }`}
       onClick={props.onClick}
     >
       {props.startIcon && (

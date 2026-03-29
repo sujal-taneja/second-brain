@@ -26,6 +26,7 @@ function Input({
 
 export default function Signup() {
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const usernameRef = useRef<HTMLInputElement | null>(null);
   const passwordRef = useRef<HTMLInputElement | null>(null);
@@ -37,6 +38,11 @@ export default function Signup() {
   }
 
   async function signupButtonHandler() {
+    if (!errorMessageDiv.current) return;
+
+    setLoading(true);
+    errorMessageDiv.current.innerText = '';
+
     try {
       const response = await axios.post<SignupResponse>(
         `${BACKEND_URL}/api/v1/signup`,
@@ -46,10 +52,29 @@ export default function Signup() {
         }
       );
 
-      errorMessageDiv.current!.innerText = `${response.data.message}!`;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      errorMessageDiv.current.innerText = `${response.data.message}!`;
+      errorMessageDiv.current.className = 'text-green-600 text-sm font-medium';
     } catch (error: any) {
-      errorMessageDiv.current!.innerText = `${error.response.data.error}!`;
+      if (error.response?.status === 429) {
+        const retryAfter = error.response.headers['retry-after'];
+        const minutes = retryAfter ? Math.ceil(retryAfter / 60) : 15;
+        errorMessageDiv.current.innerText = `Too many signup attempts. Please try again in ${minutes} minutes.`;
+        errorMessageDiv.current.className = 'text-amber-600 text-sm font-medium';
+      } else if (error.response?.data?.error) {
+        const errorMsg = typeof error.response.data.error === 'string' 
+          ? error.response.data.error 
+          : 'Invalid input. Please check your details.';
+        errorMessageDiv.current.innerText = errorMsg;
+        errorMessageDiv.current.className = 'text-red-600 text-sm font-medium';
+      } else if (error.request) {
+        errorMessageDiv.current.innerText = 'Network error. Please check your connection.';
+        errorMessageDiv.current.className = 'text-red-600 text-sm font-medium';
+      } else {
+        errorMessageDiv.current.innerText = 'An error occurred. Please try again.';
+        errorMessageDiv.current.className = 'text-red-600 text-sm font-medium';
+      }
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -90,8 +115,9 @@ export default function Signup() {
         <Button
           variant="submitSecondary"
           size="md"
-          text="Sign up"
+          text={loading ? 'Signing up...' : 'Sign up'}
           onClick={signupButtonHandler}
+          loading={loading}
         />
         <div ref={errorMessageDiv} className="text-gray-600 text-sm"></div>
       </section>

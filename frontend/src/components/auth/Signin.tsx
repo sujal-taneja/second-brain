@@ -26,6 +26,7 @@ function Input(props: InputType) {
 export default function Signin() {
   const [showPassword, setShowPassword] = useState(false);
   const [redirect, setRedirect] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const usernameRef = useRef<HTMLInputElement | null>(null);
   const passwordRef = useRef<HTMLInputElement | null>(null);
@@ -37,27 +38,52 @@ export default function Signin() {
   }
 
   async function signinButtonHandler() {
-    // try {
-    const response = await axios.post<SigninResponse>(
-      `${BACKEND_URL}/api/v1/signin`,
-      {
-        username: usernameRef.current?.value,
-        password: passwordRef.current?.value,
+    if (!errorMessageDiv.current) return;
+
+    setLoading(true);
+    errorMessageDiv.current.innerText = '';
+
+    try {
+      const response = await axios.post<SigninResponse>(
+        `${BACKEND_URL}/api/v1/signin`,
+        {
+          username: usernameRef.current?.value,
+          password: passwordRef.current?.value,
+        }
+      );
+
+      // Success message in green
+      errorMessageDiv.current.innerText = `${response.data.message}!`;
+      errorMessageDiv.current.className = 'text-green-600 text-sm font-medium';
+
+      const authHeader = response.headers['authorization'];
+      localStorage.setItem('authorization', authHeader.replace('Bearer ', ''));
+
+      setRedirect(true);
+    } catch (error: any) {
+      if (error.response?.status === 429) {
+        // rate limit error
+        const retryAfter = error.response.headers['retry-after'];
+        const minutes = retryAfter ? Math.ceil(retryAfter / 60) : 15;
+        errorMessageDiv.current.innerText = `Too many login attempts. Please try again in ${minutes} minutes.`;
+        errorMessageDiv.current.className = 'text-amber-600 text-sm font-medium';
+      } else if (error.response?.data?.error) {
+        // backend error
+        errorMessageDiv.current.innerText = error.response.data.error;
+        errorMessageDiv.current.className = 'text-red-600 text-sm font-medium';
+      } else if (error.request) {
+        // network error
+        errorMessageDiv.current.innerText = 'Network error. Please check your connection.';
+        errorMessageDiv.current.className = 'text-red-600 text-sm font-medium';
+      } else {
+        // unknown error
+        errorMessageDiv.current.innerText = 'An error occurred. Please try again.';
+        errorMessageDiv.current.className = 'text-red-600 text-sm font-medium';
       }
-    );
-
-    errorMessageDiv.current!.innerText = `${response.data.message}!`;
-
-    const authHeader = response.headers['authorization'];
-
-    localStorage.setItem('authorization', authHeader.replace('Bearer ', ''));
-
-    setRedirect(true);
-
-    // } catch (error: any) {
-    //   errorMessageDiv.current!.innerText = `${error.response.data.error}!`;
-    //   localStorage.removeItem('authorization');
-    // }
+      localStorage.removeItem('authorization');
+    } finally {
+      setLoading(false);
+    }
   }
 
   if (redirect) {
@@ -101,8 +127,9 @@ export default function Signin() {
         <Button
           variant="submitSecondary"
           size="md"
-          text="Sign in"
+          text={loading ? 'Signing in...' : 'Sign in'}
           onClick={signinButtonHandler}
+          loading={loading}
         />
         <div ref={errorMessageDiv} className="text-gray-600 text-sm"></div>
       </section>
