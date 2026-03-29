@@ -7,22 +7,40 @@ import { useState } from 'react';
 import { FRONTEND_URL, BACKEND_URL } from '../config';
 import axios from 'axios';
 
-async function copyLink(setCopied: (copied: boolean) => void) {
-  const response = await axios.post(
-    `${BACKEND_URL}/api/v1/brain/share`,
-    {
-      share: 'true',
-    },
-    {
-      headers: {
-        authorization: 'Bearer ' + localStorage.getItem('authorization'),
+async function copyLink(
+  setCopied: (copied: boolean) => void,
+  setError: (error: string) => void
+) {
+  try {
+    setError('');
+    const response = await axios.post(
+      `${BACKEND_URL}/api/v1/brain/share`,
+      {
+        share: 'true',
       },
+      {
+        headers: {
+          authorization: 'Bearer ' + localStorage.getItem('authorization'),
+        },
+      }
+    );
+    setCopied(true);
+    await navigator.clipboard.writeText(
+      FRONTEND_URL + '/content/' + (response.data as { link: any }).link
+    );
+  } catch (error: any) {
+    if (error.response?.status === 429) {
+      const retryAfter = error.response.headers['retry-after'];
+      const minutes = retryAfter ? Math.ceil(retryAfter / 60) : 5;
+      setError(`Too many requests. Please try again in ${minutes} minutes.`);
+    } else if (error.response?.data?.error) {
+      setError(error.response.data.error);
+    } else if (error.request) {
+      setError('Network error. Please check your connection.');
+    } else {
+      setError('Failed to create share link. Please try again.');
     }
-  );
-  setCopied(true);
-  await navigator.clipboard.writeText(
-    FRONTEND_URL + '/content/' + (response.data as { link: any[] }).link
-  );
+  }
 }
 
 interface DialogProps {
@@ -32,13 +50,17 @@ interface DialogProps {
 
 const ShareModal = ({ open, onOpenChange }: DialogProps) => {
   const [copied, setCopied] = useState(false);
+  const [error, setError] = useState('');
 
   return (
     <Dialog.Root
       open={open}
       onOpenChange={(isOpen) => {
         onOpenChange(isOpen);
-        if (!isOpen) setCopied(false);
+        if (!isOpen) {
+          setCopied(false);
+          setError('');
+        }
       }}
     >
       <Dialog.Portal>
@@ -56,11 +78,12 @@ const ShareModal = ({ open, onOpenChange }: DialogProps) => {
             variant={'submitSecondary'}
             size={'md'}
             text="Share Brain"
-            onClick={() => copyLink(setCopied)}
+            onClick={() => copyLink(setCopied, setError)}
             startIcon={(size) => <Copy size={size} />}
           />
-          <div className="text-center text-gray-600 text-sm mt-2">
-            {copied && <div>Link copied!</div>}
+          <div className="text-center text-sm mt-2">
+            {copied && <div className="text-green-600 font-medium">Link copied!</div>}
+            {error && <div className="text-red-600 font-medium">{error}</div>}
           </div>
           <Dialog.Close asChild>
             <button

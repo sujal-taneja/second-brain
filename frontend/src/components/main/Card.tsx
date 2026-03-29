@@ -67,16 +67,28 @@ export default function Card(props: CardType) {
     id: string;
     removeContent: (id: string) => void;
   }) {
-    const config: Record<string, any> = {
-      headers: {
-        authorization: localStorage.getItem('authorization'),
-      },
-      data: { contentId: props.id },
-    };
+    try {
+      const config: Record<string, any> = {
+        headers: {
+          authorization: 'Bearer ' + localStorage.getItem('authorization'),
+        },
+        data: { contentId: props.id },
+      };
 
-    await axios.delete(`${BACKEND_URL}/api/v1/content/`, config);
+      await axios.delete(`${BACKEND_URL}/api/v1/content/`, config);
 
-    props.removeContent(props.id);
+      props.removeContent(props.id);
+    } catch (error: any) {
+      console.error('Failed to delete content:', error);
+      
+      if (error.response?.status === 429) {
+        alert('Too many requests. Please wait a moment before trying again.');
+      } else if (error.request) {
+        alert('Network error. Please check your connection.');
+      } else {
+        alert('Failed to delete content. Please try again.');
+      }
+    }
   }
 
   return (
@@ -93,7 +105,6 @@ export default function Card(props: CardType) {
               e.stopPropagation();
               let url = props.link.trim();
 
-              // Ensure the URL starts with http:// or https://
               if (!/^https?:\/\//i.test(url)) {
                 url = 'https://' + url;
               }
