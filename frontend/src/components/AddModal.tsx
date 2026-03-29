@@ -33,12 +33,12 @@ const AddModal = ({ open, onOpenChange, changeContentState }: DialogProps) => {
     }
 
     messageDiv.current.innerText = '';
+    errorDiv.current.innerText = '';
 
     if (titleRef.current?.value.trim() === '') {
-      errorDiv.current.innerText = 'Title can not be empty';
+      errorDiv.current.innerText = 'Title cannot be empty';
+      errorDiv.current.className = 'text-center text-red-600 text-sm font-medium';
       return;
-    } else {
-      errorDiv.current.innerText = '';
     }
 
     const inputData = {
@@ -56,20 +56,43 @@ const AddModal = ({ open, onOpenChange, changeContentState }: DialogProps) => {
       }
     }
 
-    const response = await axios.post(
-      `${BACKEND_URL}/api/v1/content`,
-      inputData,
-      {
-        headers: {
-          authorization: 'Bearer ' + localStorage.getItem('authorization'),
-        },
+    try {
+      const response = await axios.post(
+        `${BACKEND_URL}/api/v1/content`,
+        inputData,
+        {
+          headers: {
+            authorization: 'Bearer ' + localStorage.getItem('authorization'),
+          },
+        }
+      );
+
+      // Use the returned content with properly populated tags
+      const createdContent = (response.data as { content: any }).content;
+      changeContentState(createdContent);
+
+      messageDiv.current.innerText = (response.data as { message: any }).message + '!';
+      messageDiv.current.className = 'text-center text-green-600 text-sm font-medium';
+    } catch (error: any) {
+      if (error.response?.status === 429) {
+        const retryAfter = error.response.headers['retry-after'];
+        const seconds = retryAfter ? retryAfter : 60;
+        errorDiv.current.innerText = `Too many requests. Please wait ${seconds} seconds.`;
+        errorDiv.current.className = 'text-center text-amber-600 text-sm font-medium';
+      } else if (error.response?.data?.error) {
+        const errorMsg = typeof error.response.data.error === 'string'
+          ? error.response.data.error
+          : 'Failed to add content. Please try again.';
+        errorDiv.current.innerText = errorMsg;
+        errorDiv.current.className = 'text-center text-red-600 text-sm font-medium';
+      } else if (error.request) {
+        errorDiv.current.innerText = 'Network error. Please check your connection.';
+        errorDiv.current.className = 'text-center text-red-600 text-sm font-medium';
+      } else {
+        errorDiv.current.innerText = 'An error occurred. Please try again.';
+        errorDiv.current.className = 'text-center text-red-600 text-sm font-medium';
       }
-    );
-
-    changeContentState(inputData);
-
-    messageDiv.current.innerText =
-      (response.data as { message: any[] }).message + '!';
+    }
   }
 
   return (

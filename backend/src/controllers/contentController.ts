@@ -25,9 +25,17 @@ export async function addContent(req: AuthRequest, res: Response) {
     const newData = { ...contentData, tags };
 
     // Add content to database
-    await ContentModel.create(newData);
-    res.json({ message: 'Content added' });
+    const createdContent = await ContentModel.create(newData);
+    
+    // Populate the tags before sending response
+    await createdContent.populate('tags', 'title');
+    
+    res.json({ 
+      message: 'Content added',
+      content: createdContent
+    });
   } catch (err) {
+    console.error('Content creation failed:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 }
@@ -64,6 +72,7 @@ export async function deleteContent(req: AuthRequest, res: Response) {
 
     res.json({ message: 'Content deleted' });
   } catch (err) {
+    console.error('Content deletion failed:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 }
